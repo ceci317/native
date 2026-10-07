@@ -244,7 +244,7 @@ select.mini-input{padding:7px 8px;cursor:pointer}
 .radio-opt.sel{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:600}
 .form-row{display:flex;flex-direction:column;gap:6px;margin-bottom:13px}
 .form-row label{font-size:13px;color:var(--ink-2);font-weight:600}
-.form-row input,.form-row select{
+.form-row input{
   border:1px solid var(--line-strong);border-radius:8px;padding:9px 12px;
   font-size:14px;font-family:inherit;color:var(--ink);background:var(--surface);
   width:100%;box-sizing:border-box;
@@ -443,7 +443,6 @@ dialog::backdrop{background:rgba(30,26,18,.45)}
           <h3>AI 推荐服务</h3>
           <p class="desc">API Key 只保存在你本地浏览器（localStorage），不会上传到任何服务器。</p>
           <div class="radio-row" id="providerRow">
-            <button type="button" class="radio-opt" data-provider="bailian">阿里云百炼</button>
             <button type="button" class="radio-opt" data-provider="doubao">豆包 / 火山方舟</button>
             <button type="button" class="radio-opt" data-provider="deepseek">DeepSeek</button>
             <button type="button" class="radio-opt" data-provider="custom">OpenAI 兼容 / 自定义</button>
@@ -453,23 +452,8 @@ dialog::backdrop{background:rgba(30,26,18,.45)}
             <input type="text" id="cfgBase" class="mono" spellcheck="false">
           </div>
           <div class="form-row">
-            <label for="cfgModel" id="cfgModelLabel">模型 ID（Model）</label>
+            <label for="cfgModel">模型 ID（Model）</label>
             <input type="text" id="cfgModel" class="mono" spellcheck="false">
-            <select id="cfgModelSelect" class="mono" aria-label="选择百炼模型" hidden>
-              <optgroup label="DeepSeek">
-                <option value="deepseek-v4-flash-0731">DeepSeek V4 Flash 0731（默认）</option>
-                <option value="deepseek-v4-flash">DeepSeek V4 Flash</option>
-                <option value="deepseek-v4.1-flash">DeepSeek V4.1 Flash</option>
-                <option value="deepseek-v4-pro-0813">DeepSeek V4 Pro 0813</option>
-                <option value="deepseek-v4-pro">DeepSeek V4 Pro</option>
-              </optgroup>
-              <optgroup label="千问">
-                <option value="qwen3.8-flash">Qwen3.8 Flash</option>
-                <option value="qwen3.7-plus">Qwen3.7 Plus</option>
-                <option value="qwen3.8-max">Qwen3.8 Max</option>
-                <option value="qwen3.6-flash">Qwen3.6 Flash</option>
-              </optgroup>
-            </select>
           </div>
           <div class="form-row">
             <label for="cfgKey">API Key</label>
@@ -483,7 +467,6 @@ dialog::backdrop{background:rgba(30,26,18,.45)}
             <input type="checkbox" id="cfgForceJson" checked>
             <label for="cfgForceJson">强制 JSON 输出（遇到接口不支持 json_object 报错时关掉，靠提示词约束）</label>
           </div>
-          <p class="desc" id="jsonModelHint" hidden>当前模型不支持强制 JSON 输出，已自动关闭此选项。</p>
           <div class="toggle-row">
             <input type="checkbox" id="cfgThinking">
             <label for="cfgThinking">开启思考 / 深度推理（默认关闭，查询更快更省；遇到难翻的成语、需要精细辨析时可手动开启）</label>
@@ -660,7 +643,7 @@ function callAI(text){
     max_tokens:1500,
     stream:true
   };
-  if(st.forceJson!==false && !(st.provider==="bailian" && st.model==="deepseek-v4-flash-0731")){
+  if(st.forceJson!==false){
     payload.response_format={type:"json_object"};
   }
   payload.enable_thinking = !!st.thinking;
@@ -1357,7 +1340,6 @@ $("setImportFile").addEventListener("change",function(){
 
 /* ================= 设置表单 ================= */
 var PROVIDERS={
-  bailian:{base:"https://maas.qianwenaiapi.com/compatible-mode/v1",model:"deepseek-v4-flash-0731"},
   doubao:{base:"https://ark.cn-beijing.volces.com/api/v3",model:"doubao-seed-1-6-250615"},
   deepseek:{base:"https://api.deepseek.com",model:"deepseek-chat"},
   custom:{base:"https://api.openai.com/v1",model:"gpt-4o-mini"}
@@ -1368,18 +1350,8 @@ function fillSettings(){
   for(var i=0;i<btns.length;i++){ btns[i].classList.toggle("sel", btns[i].getAttribute("data-provider")===p); }
   $("cfgBase").value=db.settings.base;
   $("cfgModel").value=db.settings.model;
-  var modelSelect=$("cfgModelSelect");
-  var savedOption=modelSelect.querySelector("[data-saved-model]");
-  if(savedOption) savedOption.remove();
-  if(db.settings.provider==="bailian" && db.settings.model && !Array.from(modelSelect.options).some(function(o){return o.value===db.settings.model;})){
-    var option=new Option("已保存："+db.settings.model,db.settings.model);
-    option.setAttribute("data-saved-model","");
-    modelSelect.add(option);
-  }
-  modelSelect.value=db.settings.model;
   $("cfgKey").value=db.settings.key;
   $("cfgForceJson").checked = db.settings.forceJson!==false;
-  updateModelControl();
   $("cfgThinking").checked = !!db.settings.thinking;
   $("src-reverso").checked=!!db.settings.sources.reverso;
   $("src-youglish").checked=!!db.settings.sources.youglish;
@@ -1388,9 +1360,9 @@ function fillSettings(){
 }
 function saveSettingsFromForm(){
   db.settings.base=$("cfgBase").value.trim();
-  db.settings.model=db.settings.provider==="bailian" ? $("cfgModelSelect").value : $("cfgModel").value.trim();
+  db.settings.model=$("cfgModel").value.trim();
   db.settings.key=$("cfgKey").value.trim();
-  db.settings.forceJson = $("cfgForceJson").checked && !(db.settings.provider==="bailian" && db.settings.model==="deepseek-v4-flash-0731");
+  db.settings.forceJson = $("cfgForceJson").checked;
   db.settings.thinking = $("cfgThinking").checked;
   db.settings.sources={
     reverso:$("src-reverso").checked,
@@ -1399,17 +1371,6 @@ function saveSettingsFromForm(){
     jukuu:$("src-jukuu").checked
   };
   saveDB();
-  updateModelControl();
-}
-function updateModelControl(){
-  var bailian=db.settings.provider==="bailian";
-  $("cfgModel").hidden=bailian;
-  $("cfgModelSelect").hidden=!bailian;
-  $("cfgModelLabel").htmlFor=bailian ? "cfgModelSelect" : "cfgModel";
-  var jsonUnsupported=bailian && db.settings.model==="deepseek-v4-flash-0731";
-  $("cfgForceJson").disabled=jsonUnsupported;
-  if(jsonUnsupported) $("cfgForceJson").checked=false;
-  $("jsonModelHint").hidden=!jsonUnsupported;
 }
 document.querySelectorAll("#providerRow .radio-opt").forEach(function(btn){
   btn.addEventListener("click",function(){
@@ -1418,8 +1379,6 @@ document.querySelectorAll("#providerRow .radio-opt").forEach(function(btn){
     var preset=PROVIDERS[p];
     $("cfgBase").value=preset.base;
     $("cfgModel").value=preset.model;
-    $("cfgModelSelect").value=preset.model;
-    $("cfgForceJson").checked=p!=="bailian";
     document.querySelectorAll("#providerRow .radio-opt").forEach(function(b){
       b.classList.toggle("sel", b===btn);
     });
@@ -1428,12 +1387,6 @@ document.querySelectorAll("#providerRow .radio-opt").forEach(function(btn){
 });
 ["cfgBase","cfgModel","cfgKey"].forEach(function(id){
   $(id).addEventListener("change",saveSettingsFromForm);
-});
-$("cfgModelSelect").addEventListener("change",function(){
-  if(db.settings.model==="deepseek-v4-flash-0731" && this.value!==db.settings.model){
-    $("cfgForceJson").checked=true;
-  }
-  saveSettingsFromForm();
 });
 $("cfgForceJson").addEventListener("change",saveSettingsFromForm);
 $("cfgThinking").addEventListener("change",saveSettingsFromForm);

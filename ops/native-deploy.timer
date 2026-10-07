@@ -1,0 +1,11 @@
+[Unit]
+Description=Check NATIVE GitHub main for updates
+
+[Timer]
+OnCalendar=*-*-* *:0/2:00
+AccuracySec=15s
+Persistent=true
+Unit=native-deploy.service
+
+[Install]
+WantedBy=timers.target

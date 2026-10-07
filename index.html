@@ -1,0 +1,1446 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NATIVE · 中文到地道英文表达</title>
+<style>
+:root{
+  --canvas:#f6f3ec;
+  --surface:#fffdf8;
+  --surface-2:#f1ece1;
+  --ink:#232821;
+  --ink-2:#5a6157;
+  --ink-3:#8a8f84;
+  --line:#e0d9ca;
+  --line-strong:#cfc6b2;
+  --accent:#1f5c46;
+  --accent-ink:#f3faf6;
+  --accent-soft:#e5efe9;
+  --gold:#b08027;
+  --danger:#a23c33;
+  --radius:10px;
+  --radius-sm:7px;
+  --shadow:0 1px 2px rgba(40,36,25,.05),0 6px 20px -12px rgba(40,36,25,.18);
+  --font-body:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  --font-mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--canvas);
+  color:var(--ink);
+  font-family:var(--font-body);
+  font-size:16px;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+a{color:var(--accent)}
+button{font-family:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+
+/* ---------- layout ---------- */
+.app{min-height:100vh;display:flex;flex-direction:column}
+.topbar{
+  position:sticky;top:0;z-index:20;
+  background:rgba(246,243,236,.92);
+  backdrop-filter:saturate(1.2) blur(8px);
+  border-bottom:1px solid var(--line);
+}
+.topbar-inner{
+  max-width:1080px;margin:0 auto;padding:12px clamp(16px,4vw,32px);
+  display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+}
+.brand{display:flex;align-items:baseline;gap:10px;text-decoration:none;color:var(--ink)}
+.brand .mark{
+  font-weight:800;letter-spacing:.14em;font-size:18px;
+}
+.brand .sub{font-size:12.5px;color:var(--ink-3);letter-spacing:.02em}
+.brand .dot{color:var(--accent)}
+nav.tabs{display:flex;gap:4px;margin-left:auto}
+nav.tabs button{
+  border:0;background:transparent;color:var(--ink-2);
+  padding:7px 14px;border-radius:999px;font-size:14.5px;font-weight:500;
+  transition:background .15s,color .15s;
+}
+nav.tabs button:hover{background:var(--surface-2);color:var(--ink)}
+nav.tabs button.active{background:var(--accent);color:var(--accent-ink)}
+main{flex:1;width:100%;max-width:1080px;margin:0 auto;padding:clamp(20px,4vw,40px) clamp(16px,4vw,32px) 80px}
+.tabview{display:none}
+.tabview.active{display:block;animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+footer.foot{
+  border-top:1px solid var(--line);
+  color:var(--ink-3);font-size:12.5px;text-align:center;padding:18px 16px;
+}
+
+/* ---------- home / search ---------- */
+.hero{max-width:1080px;margin:clamp(8px,3vh,36px) 0 26px}
+.hero h1{font-size:clamp(24px,4vw,34px);line-height:1.25;margin:0 0 10px;font-weight:800;letter-spacing:-.01em}
+.hero p{margin:0;color:var(--ink-2);font-size:15.5px}
+.searchbox{
+  display:flex;gap:10px;background:var(--surface);
+  border:1px solid var(--line-strong);border-radius:14px;padding:8px;
+  box-shadow:var(--shadow);max-width:1080px;
+}
+.searchbox input{
+  flex:1;min-width:0;border:0;background:transparent;padding:10px 12px;
+  font-size:17px;color:var(--ink);font-family:inherit;
+}
+.searchbox input::placeholder{color:var(--ink-3)}
+.btn{
+  border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);
+  padding:9px 18px;border-radius:9px;font-size:14.5px;font-weight:600;
+  transition:background .15s,border-color .15s,transform .05s;white-space:nowrap;
+}
+.btn:hover{background:var(--surface-2)}
+.btn:active{transform:translateY(1px)}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn-primary:hover{background:#19493a}
+.btn-ghost{border-color:transparent;background:transparent}
+.btn-ghost:hover{background:var(--surface-2)}
+.btn-sm{padding:5px 11px;font-size:13px;border-radius:7px}
+.btn-danger-ghost{border-color:transparent;background:transparent;color:var(--danger)}
+.btn-danger-ghost:hover{background:#f5e7e5}
+
+.suggest{max-width:720px;margin-top:22px}
+.suggest .lbl{font-size:13px;color:var(--ink-3);margin-bottom:10px;letter-spacing:.02em}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{
+  border:1px solid var(--line-strong);background:var(--surface);
+  color:var(--ink-2);padding:6px 13px;border-radius:999px;font-size:13.5px;
+  transition:all .15s;
+}
+.chip:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+.recent{max-width:720px;margin-top:20px;font-size:13.5px;color:var(--ink-3)}
+.recent .rchip{
+  display:inline-flex;align-items:center;gap:6px;margin:0 6px 6px 0;
+  border:1px solid var(--line);background:transparent;border-radius:999px;
+  padding:4px 8px 4px 12px;color:var(--ink-2);font-size:13px;
+}
+.recent .rchip button{border:0;background:transparent;color:var(--ink-3);padding:0 2px;line-height:1;font-size:14px}
+.recent .rchip button:hover{color:var(--danger)}
+
+/* ---------- status / loading ---------- */
+.status{max-width:720px;margin-top:26px}
+.status-card{
+  border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;
+  background:var(--surface);color:var(--ink-2);font-size:14.5px;
+}
+.status-card.error{border-color:#d9b4ae;background:#fbf1f0;color:var(--danger)}
+.status-card .hint{display:block;margin-top:6px;font-size:13px;color:var(--ink-3)}
+.spinner{
+  width:17px;height:17px;border:2px solid var(--line-strong);border-top-color:var(--accent);
+  border-radius:50%;display:inline-block;vertical-align:-3px;margin-right:9px;
+  animation:spin .7s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ---------- results ---------- */
+.results-head{
+  display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;
+  margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--line);
+}
+.results-head h2{margin:0;font-size:20px;font-weight:700}
+.results-head .meta{color:var(--ink-3);font-size:13.5px}
+
+.disambig{
+  background:var(--accent-soft);border:1px solid #cfe0d6;
+  border-radius:var(--radius);padding:16px 18px;margin-bottom:20px;
+}
+.disambig .d-title{font-weight:700;color:var(--accent);font-size:14.5px;margin-bottom:8px;display:flex;gap:7px;align-items:center}
+.disambig ul{margin:0;padding-left:2px;list-style:none}
+.disambig li{padding:4px 0;font-size:14.5px;color:#274436}
+.disambig li b,.disambig-list span b{color:var(--accent)}
+.disambig li span,.disambig-list span span{color:var(--ink-2)}
+.disambig-list{display:flex;flex-wrap:wrap;gap:0;margin-top:4px;font-size:14.5px;line-height:1.7}
+.disambig-list .sep{color:var(--ink-3);margin:0 6px}
+
+.expr{
+  background:var(--surface);border:1px solid var(--line);
+  border-radius:var(--radius);padding:18px 20px;margin-bottom:14px;
+  transition:border-color .15s,box-shadow .15s;
+}
+.expr:hover{border-color:var(--line-strong);box-shadow:var(--shadow)}
+.expr-top{display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.expr-en{font-size:21px;font-weight:750;letter-spacing:-.01em;line-height:1.3}
+.stars{color:var(--gold);font-size:14px;letter-spacing:1px;white-space:nowrap}
+.stars .off{color:var(--line-strong)}
+.expr-top .spacer{flex:1}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 4px}
+.tag{
+  font-size:12px;padding:2px 9px;border-radius:5px;
+  background:var(--surface-2);color:var(--ink-2);border:1px solid var(--line);
+}
+.tag.t-freq{background:#f4ecd9;border-color:#e3d4ab;color:#7c5d1e}
+.expr-mean{margin:10px 0 4px;font-size:15px}
+.expr-scene{font-size:13.5px;color:var(--ink-2)}
+.expr-scene b{color:var(--ink);font-weight:600}
+.divider{border:0;border-top:1px dashed var(--line-strong);margin:13px 0}
+.example{font-size:14.5px;color:var(--ink)}
+.example .qlabel{color:var(--ink-3);font-size:12.5px;margin-right:6px}
+.example .zh{display:block;color:var(--ink-2);font-size:13.5px;margin-top:2px}
+.examples{margin-top:2px}
+.examples .ex-title{font-size:13px;color:var(--ink-3);font-weight:600;margin-bottom:6px;letter-spacing:.03em}
+.examples .ex-item{padding:8px 0 10px;font-size:14px;color:var(--ink)}
+.examples .ex-num{color:var(--accent);font-weight:700;font-size:13px;margin-right:4px}
+.examples .ex-en{font-size:15px;color:var(--ink);line-height:1.6}
+.examples .ex-zh{display:block;color:var(--ink-2);font-size:13.5px;margin-top:3px;line-height:1.5}
+.examples .ex-source{color:var(--ink-3);font-size:12px;font-style:italic;margin-left:6px}
+.sources{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:13px}
+.sources .slabel{font-size:12.5px;color:var(--ink-3);margin-right:2px}
+.srclink{
+  font-size:13px;text-decoration:none;padding:4px 11px;border-radius:7px;
+  border:1px solid var(--line-strong);background:var(--surface);color:var(--ink-2);
+  transition:all .15s;
+}
+.srclink:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+.saved-pill{font-size:12.5px;color:var(--accent);font-weight:600;display:inline-flex;gap:5px;align-items:center}
+
+/* ---------- library ---------- */
+.lib-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+.lib-head h2{margin:0;font-size:20px;font-weight:700}
+.lib-head .count{color:var(--ink-3);font-size:13.5px}
+.lib-head .spacer{flex:1}
+.mini-input{
+  border:1px solid var(--line-strong);background:var(--surface);border-radius:8px;
+  padding:7px 12px;font-size:14px;color:var(--ink);font-family:inherit;min-width:140px;
+}
+select.mini-input{padding:7px 8px;cursor:pointer}
+.lib-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.lib-card{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  padding:15px 16px;display:flex;flex-direction:column;gap:7px;
+}
+.lib-card .lc-top{display:flex;align-items:baseline;gap:9px}
+.lib-card .lc-en{font-size:17px;font-weight:700}
+.lib-card .lc-zh{color:var(--ink-2);font-size:13.5px}
+.lib-card .lc-foot{display:flex;align-items:center;gap:8px;margin-top:4px}
+.status-select{font-size:12px;padding:3px 7px;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:var(--ink-2);font-family:inherit}
+.lib-card .lc-foot .spacer{flex:1}
+.empty{
+  border:1px dashed var(--line-strong);border-radius:var(--radius);
+  padding:44px 20px;text-align:center;color:var(--ink-3);background:var(--surface);
+}
+.empty .big{font-size:26px;margin-bottom:8px}
+.lib-data-actions{margin-top:22px;display:flex;gap:10px;flex-wrap:wrap}
+.coming{
+  margin-top:22px;border:1px solid var(--line);border-radius:var(--radius);
+  padding:14px 18px;background:var(--surface);color:var(--ink-2);font-size:13.5px;
+}
+.coming b{color:var(--accent)}
+
+/* ---------- settings ---------- */
+.settings-wrap{max-width:1080px;display:flex;flex-direction:column;gap:18px}
+.fieldset{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px}
+.fieldset h3{margin:0 0 4px;font-size:16px;font-weight:700}
+.fieldset .desc{font-size:13px;color:var(--ink-3);margin:0 0 16px}
+.radio-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.radio-opt{
+  border:1px solid var(--line-strong);border-radius:9px;padding:9px 15px;font-size:14px;
+  background:var(--surface);color:var(--ink-2);display:flex;gap:7px;align-items:center;
+}
+.radio-opt.sel{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:600}
+.form-row{display:flex;flex-direction:column;gap:6px;margin-bottom:13px}
+.form-row label{font-size:13px;color:var(--ink-2);font-weight:600}
+.form-row input{
+  border:1px solid var(--line-strong);border-radius:8px;padding:9px 12px;
+  font-size:14px;font-family:inherit;color:var(--ink);background:var(--surface);
+  width:100%;box-sizing:border-box;
+}
+.form-row input.mono{font-family:var(--font-mono);font-size:13px}
+.form-row .inline{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.test-result{font-size:13px;margin-top:8px}
+.test-result.ok{color:var(--accent)}
+.test-result.fail{color:var(--danger)}
+.toggle-row{display:flex;align-items:center;gap:10px;padding:7px 0;font-size:14.5px}
+.toggle-row input{width:17px;height:17px;accent-color:var(--accent)}
+.danger-zone{border-color:#e0c3bf}
+.setting-msg{font-size:13px;margin-top:10px;color:var(--accent)}
+
+/* ---------- dialog ---------- */
+dialog{
+  border:1px solid var(--line-strong);border-radius:var(--radius);
+  background:var(--surface);padding:0;max-width:480px;width:calc(100% - 40px);
+  color:var(--ink);box-shadow:0 20px 60px -20px rgba(0,0,0,.4);
+}
+dialog::backdrop{background:rgba(30,26,18,.45)}
+.dlg-head{padding:18px 22px 0;font-size:17px;font-weight:700}
+.dlg-body{padding:14px 22px;color:var(--ink-2);font-size:14.5px}
+.dlg-foot{padding:0 22px 20px;display:flex;gap:10px;justify-content:flex-end;margin-top:8px}
+
+@media (max-width:640px){
+  .brand .sub{display:none}
+  nav.tabs{width:100%;margin-left:0;justify-content:space-between}
+  nav.tabs button{padding:7px 10px;font-size:13.5px;flex:1}
+  .expr-en{font-size:19px}
+  .lib-head .spacer{display:none}
+}
+@media print{
+  .topbar,.lib-data-actions,.sources .slabel~.btn,footer.foot,.btn,.searchbox{display:none}
+  body{background:#fff}
+  .expr,.lib-card,.fieldset{break-inside:avoid;box-shadow:none;border-color:#ccc}
+  a{color:#000;text-decoration:none}
+  a[href]::after{content:" (" attr(href) ")";font-size:11px;color:#666}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;transition-duration:.001ms!important}
+}
+
+/* ---------- review mode ---------- */
+.review-wrap{max-width:600px;margin:40px auto;padding:0 20px}
+.review-progress{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;font-size:14px;color:var(--ink-2)}
+.flip-card{perspective:1200px;height:500px;cursor:pointer}
+.flip-inner{position:relative;width:100%;height:100%;transition:transform 0.6s;transform-style:preserve-3d}
+.flip-card.flipped .flip-inner{transform:rotateY(180deg)}
+.flip-front,.flip-back{position:absolute;width:100%;height:100%;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:var(--radius);padding:36px 28px;display:flex;flex-direction:column}
+.flip-front{background:var(--surface);border:1px solid var(--line-strong);box-shadow:var(--shadow)}
+.flip-back{background:var(--surface);border:1px solid var(--line);transform:rotateY(180deg)}
+.review-scene{font-size:13px;color:var(--accent);margin-bottom:20px;letter-spacing:.05em;font-weight:600}
+.flip-back .review-scene{color:var(--ink-3);font-weight:500}
+.review-dialogue{flex:1;font-size:19px;line-height:1.8;color:var(--ink);overflow-y:auto}
+.flip-back .review-dialogue-bilingual{flex:1;font-size:15px;line-height:1.7;overflow-y:auto}
+.review-dialogue-bilingual .zh-line{color:var(--ink-2);margin-bottom:10px}
+.review-dialogue-bilingual .en-line{color:var(--ink);font-weight:500;margin-bottom:18px;padding-left:12px;border-left:3px solid var(--accent)}
+.review-target{margin:20px 0;padding:14px;background:var(--accent-soft);border-radius:10px;font-size:14px;color:var(--ink)}
+.review-target b{color:var(--accent);font-weight:700}
+.flip-actions{display:flex;gap:12px;margin-top:20px}
+.flip-actions button{flex:1;padding:13px;border-radius:10px;font-size:15px;font-weight:600;border:1px solid var(--line-strong);cursor:pointer;transition:all 0.15s}
+/* 对话样式 */
+.dlg-line{margin-bottom:14px;line-height:1.7}
+.dlg-speaker{font-weight:700;color:var(--accent);font-size:15px;margin-right:6px}
+.dlg-text{color:var(--ink);font-size:18px}
+.dlg-line-bi{margin-bottom:18px;line-height:1.6}
+.dlg-zh-bi{color:var(--ink-2);font-size:14.5px;margin-bottom:3px}
+.dlg-en-bi{color:var(--ink);font-weight:500;font-size:14.5px;padding-left:12px;border-left:3px solid var(--accent)}
+.btn-wont{background:var(--surface);color:var(--ink)}
+.btn-wont:hover{background:var(--surface-2);border-color:var(--line-strong)}
+.btn-know{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn-know:hover{opacity:0.92}
+.btn-retry{background:var(--surface);color:var(--accent);border:2px dashed var(--accent);padding:14px 28px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer}
+.btn-retry:hover{background:rgba(31,92,70,0.08)}
+.btn-retry:disabled{opacity:0.6;cursor:not-allowed}
+.flip-hint{text-align:center;color:var(--ink-3);font-size:13px;margin-top:16px}
+.btn-next{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);padding:12px 24px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;margin-top:16px;align-self:center}
+.btn-next:hover{opacity:0.92}
+.review-empty,.review-done{text-align:center;padding:80px 20px}
+.review-empty h3,.review-done h3{font-size:22px;margin-bottom:16px}
+.review-empty p,.review-done p{color:var(--ink-2);margin-bottom:24px;font-size:15px}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="#view-search" id="brandLink">
+        <span class="mark">NATIVE<span class="dot">.</span></span>
+        <span class="sub">中文 → 英文 · 地道表达检索</span>
+      </a>
+      <nav class="tabs" aria-label="主导航">
+        <button data-tab="search" class="active" id="tab-search">查表达</button>
+        <button data-tab="library" id="tab-library">我的词库 <span id="libCountBadge"></span></button>
+        <button data-tab="review" id="tab-review" style="display:none">复习</button>
+        <button data-tab="settings" id="tab-settings">设置</button>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- ============ SEARCH ============ -->
+    <section class="tabview active" id="view-search" aria-label="查表达">
+      <div class="hero">
+        <h1>输入中文，找到母语者真正在用的英文</h1>
+        <p>不直译。给你一组语域分明的地道表达，标注频率、场景、语气，每个都能点进真实语料验证，再收进你的词库。</p>
+      </div>
+
+      <form class="searchbox" id="searchForm">
+        <input type="text" id="searchInput" autocomplete="off"
+               placeholder="输入中文，比如：说到做到、可不是嘛、摸鱼…" aria-label="输入要查询的中文">
+        <button type="submit" class="btn btn-primary" id="searchBtn">搜索</button>
+      </form>
+
+      <div class="suggest" id="suggestBlock">
+        <div class="lbl">试试这些</div>
+        <div class="chips" id="suggestChips"></div>
+      </div>
+
+      <div class="recent" id="recentBlock"></div>
+      <div class="status" id="statusArea"></div>
+      <div id="resultsArea"></div>
+    </section>
+
+    <!-- ============ LIBRARY ============ -->
+    <section class="tabview" id="view-library" aria-label="我的词库">
+      <div class="lib-head">
+        <h2>我的词库</h2>
+        <span class="count" id="libCount"></span>
+        <span class="spacer"></span>
+        <button class="btn btn-primary btn-sm" id="reviewBtn" style="margin-right:10px">开始复习</button>
+        <input type="search" class="mini-input" id="libSearch" placeholder="搜索词库…" aria-label="搜索词库">
+        <select class="mini-input" id="libFilter" aria-label="按状态筛选">
+          <option value="all">全部状态</option>
+          <option value="new">新词</option>
+          <option value="learning">学习中</option>
+          <option value="mastered">已掌握</option>
+        </select>
+        <button class="btn btn-sm" id="addManualBtn">+ 手动添加</button>
+      </div>
+      <div id="libList"></div>
+      <div class="lib-data-actions">
+        <button class="btn btn-sm" id="exportBtn">导出 JSON 备份</button>
+        <button class="btn btn-sm" id="importBtn">导入 JSON</button>
+        <input type="file" id="importFile" accept="application/json,.json" hidden>
+      </div>
+    </section>
+
+    <!-- ============ REVIEW ============ -->
+    <section class="tabview" id="view-review" aria-label="复习">
+      <div class="review-wrap" id="reviewWrap">
+        <div class="review-progress">
+          <span id="reviewProgress"></span>
+          <button class="btn btn-sm" id="exitReviewBtn">退出复习</button>
+        </div>
+        <div class="flip-card" id="flipCard">
+          <div class="flip-inner" id="flipInner">
+            <div class="flip-front" id="flipFront">
+              <div class="review-scene" id="reviewScene"></div>
+              <div class="review-dialogue" id="reviewDialogueZh"></div>
+              <div class="flip-actions" id="flipActionsNormal">
+                <button class="btn-wont" id="btnWont"> 不会</button>
+                <button class="btn-know" id="btnKnow">✓ 会</button>
+              </div>
+              <div class="flip-actions" id="flipActionsRetry" style="display:none">
+                <button class="btn-retry" id="btnRetry"> 重新生成对话</button>
+                <div class="flip-hint" style="margin-top:8px">对话尚未生成，点击按钮重新生成</div>
+              </div>
+            </div>
+            <div class="flip-back" id="flipBack">
+              <div class="review-scene" id="reviewSceneBack"></div>
+              <div class="review-dialogue-bilingual" id="reviewDialogueBi"></div>
+              <div class="review-target" id="reviewTarget"></div>
+              <button class="btn-next" id="btnNext">下一个 →</button>
+              <div class="flip-hint">或按空格键</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="review-empty" id="reviewEmpty" style="display:none">
+        <h3> 词库是空的</h3>
+        <p>去「查表达」收藏一些地道表达，再来这里复习。</p>
+      </div>
+      <div class="review-done" id="reviewDone" style="display:none">
+        <h3>✅ 本次复习完成</h3>
+        <p id="reviewStats"></p>
+        <button class="btn btn-primary" id="backToLibraryBtn">返回词库</button>
+      </div>
+    </section>
+
+    <!-- ============ SETTINGS ============ -->
+    <section class="tabview" id="view-settings" aria-label="设置">
+      <div class="settings-wrap">
+        <div class="fieldset">
+          <h3>AI 推荐服务</h3>
+          <p class="desc">API Key 只保存在你本地浏览器（localStorage），不会上传到任何服务器。</p>
+          <div class="radio-row" id="providerRow">
+            <button type="button" class="radio-opt" data-provider="doubao">豆包 / 火山方舟</button>
+            <button type="button" class="radio-opt" data-provider="deepseek">DeepSeek</button>
+            <button type="button" class="radio-opt" data-provider="custom">OpenAI 兼容 / 自定义</button>
+          </div>
+          <div class="form-row">
+            <label for="cfgBase">接口地址（Base URL）</label>
+            <input type="text" id="cfgBase" class="mono" spellcheck="false">
+          </div>
+          <div class="form-row">
+            <label for="cfgModel">模型 ID（Model）</label>
+            <input type="text" id="cfgModel" class="mono" spellcheck="false">
+          </div>
+          <div class="form-row">
+            <label for="cfgKey">API Key</label>
+            <div class="inline">
+              <input type="password" id="cfgKey" class="mono" style="flex:1;min-width:200px" spellcheck="false" placeholder="填写你的 API Key">
+              <button type="button" class="btn btn-sm" id="testBtn">测试连接</button>
+            </div>
+            <div class="test-result" id="testResult"></div>
+          </div>
+          <div class="toggle-row">
+            <input type="checkbox" id="cfgForceJson" checked>
+            <label for="cfgForceJson">强制 JSON 输出（遇到接口不支持 json_object 报错时关掉，靠提示词约束）</label>
+          </div>
+          <div class="toggle-row">
+            <input type="checkbox" id="cfgThinking">
+            <label for="cfgThinking">开启思考 / 深度推理（默认关闭，查询更快更省；遇到难翻的成语、需要精细辨析时可手动开启）</label>
+          </div>
+        </div>
+
+        <div class="fieldset">
+          <h3>语料来源</h3>
+          <p class="desc">每个表达都会生成这些来源的直链，点开即可看真实双语句、真人语境视频和权威释义。</p>
+          <div class="toggle-row"><input type="checkbox" id="src-reverso"><label for="src-reverso">Reverso Context — 真实双语例句（字幕 / 网页 / 文章）</label></div>
+          <div class="toggle-row"><input type="checkbox" id="src-youglish"><label for="src-youglish">YouGlish — YouTube 真人在真实场景中怎么说</label></div>
+          <div class="toggle-row"><input type="checkbox" id="src-cambridge"><label for="src-cambridge">Cambridge Dictionary — 权威释义</label></div>
+          <div class="toggle-row"><input type="checkbox" id="src-jukuu"><label for="src-jukuu">句酷 Jukuu — 中文使用者友好的双语例句</label></div>
+        </div>
+
+        <div class="fieldset danger-zone">
+          <h3>数据管理</h3>
+          <p class="desc">词库、历史和设置都在本地。建议定期导出备份。</p>
+          <button class="btn btn-sm" id="setExportBtn">导出全部数据</button>
+          <button class="btn btn-sm" id="setImportBtn">导入数据</button>
+          <button class="btn btn-sm btn-danger-ghost" id="clearBtn">清空本地全部数据</button>
+          <input type="file" id="setImportFile" accept="application/json,.json" hidden>
+          <div class="setting-msg" id="setMsg"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    NATIVE · 个人本地版　AI 负责推荐候选，地道性以真实语料链接为准。
+  </footer>
+</div>
+
+<dialog id="confirmDialog">
+  <form method="dialog" id="confirmForm">
+    <div class="dlg-head" id="confirmTitle">确认操作</div>
+    <div class="dlg-body" id="confirmBody"></div>
+    <div class="dlg-foot">
+      <button type="button" class="btn btn-sm" value="cancel">取消</button>
+      <button type="button" class="btn btn-sm btn-primary" value="ok" id="confirmOk">确认</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+(function(){
+"use strict";
+
+/* ================= 存储 ================= */
+var LS_KEY = "native_app_v1";
+var DEFAULTS = {
+  settings:{
+    provider:"doubao",
+    base:"https://ark.cn-beijing.volces.com/api/v3",
+    model:"doubao-seed-1-6-250615",
+    key:"",
+    thinking:false,
+    sources:{reverso:true,youglish:true,cambridge:true,jukuu:false}
+  },
+  library:[],       // 保存的表达
+  recent:[]         // 最近查询中文
+};
+var db = loadDB();
+
+function loadDB(){
+  try{
+    var raw = localStorage.getItem(LS_KEY);
+    if(!raw) return JSON.parse(JSON.stringify(DEFAULTS));
+    var parsed = JSON.parse(raw);
+    return {
+      settings:Object.assign(JSON.parse(JSON.stringify(DEFAULTS.settings)), parsed.settings||{}),
+      library:Array.isArray(parsed.library)?parsed.library:[],
+      recent:Array.isArray(parsed.recent)?parsed.recent:[]
+    };
+  }catch(e){
+    return JSON.parse(JSON.stringify(DEFAULTS));
+  }
+}
+function saveDB(){
+  try{ localStorage.setItem(LS_KEY, JSON.stringify(db)); }catch(e){}
+}
+
+/* ================= 工具 ================= */
+function $(id){ return document.getElementById(id); }
+function esc(s){
+  return String(s==null?"":s).replace(/[&<>"']/g,function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+  });
+}
+function uid(){ return "e"+Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+
+/* ================= 语料链接 ================= */
+function corpusLinks(expr){
+  var q = encodeURIComponent(expr);
+  var s = db.settings.sources;
+  var out = [];
+  if(s.reverso) out.push('<a class="srclink" target="_blank" rel="noopener noreferrer" href="https://context.reverso.net/translation/english-chinese/'+q+'">Reverso 双语句</a>');
+  if(s.youglish) out.push('<a class="srclink" target="_blank" rel="noopener noreferrer" href="https://youglish.com/pronounce/'+q+'/english/us">YouGlish 真人视频</a>');
+  if(s.cambridge) out.push('<a class="srclink" target="_blank" rel="noopener noreferrer" href="https://dictionary.cambridge.org/search/english/direct/?q='+q+'">Cambridge 释义</a>');
+  if(s.jukuu) out.push('<a class="srclink" target="_blank" rel="noopener noreferrer" href="https://www.jukuu.com/search.php?q='+q+'">句酷 例句</a>');
+  return out.join("");
+}
+
+/* ================= Tab 切换 ================= */
+function switchTab(name){
+  var tabs=document.querySelectorAll("nav.tabs button");
+  for(var i=0;i<tabs.length;i++){ tabs[i].classList.toggle("active", tabs[i].getAttribute("data-tab")===name); }
+  var views=document.querySelectorAll(".tabview");
+  for(var j=0;j<views.length;j++){ views[j].classList.toggle("active", views[j].id==="view-"+name); }
+  if(name==="library") renderLibrary();
+  if(name==="settings") fillSettings();
+  window.scrollTo(0,0);
+}
+$("tab-search").addEventListener("click",function(){switchTab("search");});
+$("tab-library").addEventListener("click",function(){switchTab("library");});
+$("tab-review").addEventListener("click",function(){switchTab("review");});
+$("tab-settings").addEventListener("click",function(){switchTab("settings");});
+$("brandLink").addEventListener("click",function(e){e.preventDefault();switchTab("search");});
+
+/* ================= 建议词 & 最近 ================= */
+var SUGGESTS=["大海捞针","可不是嘛","我等会再回你","熟能生巧","无风不起浪","摸鱼","说到做到","卷","破防","随缘"];
+function renderSuggest(){
+  $("suggestChips").innerHTML = SUGGESTS.map(function(w){return '<button type="button" class="chip" data-q="'+esc(w)+'">'+esc(w)+"</button>";}).join("");
+}
+function renderRecent(){
+  var box=$("recentBlock");
+  if(!db.recent.length){ box.innerHTML=""; return; }
+  var inner = db.recent.slice(0,8).map(function(w){
+    return '<button type="button" class="rchip"><span data-q="'+esc(w)+'">'+esc(w)+'</span><span data-del="'+esc(w)+'" title="删除">×</span></button>';
+  }).join("");
+  box.innerHTML = "最近查过：" + inner;
+}
+$("suggestChips").addEventListener("click",function(e){
+  var b=e.target.closest("[data-q]"); if(b){ runSearch(b.getAttribute("data-q")); }
+});
+$("recentBlock").addEventListener("click",function(e){
+  var del=e.target.closest("[data-del]");
+  if(del){
+    var w=del.getAttribute("data-del");
+    db.recent=db.recent.filter(function(x){return x!==w;});
+    saveDB(); renderRecent(); return;
+  }
+  var q=e.target.closest("[data-q]");
+  if(q){ runSearch(q.getAttribute("data-q")); }
+});
+function pushRecent(q){
+  db.recent=db.recent.filter(function(x){return x!==q;});
+  db.recent.unshift(q);
+  if(db.recent.length>12) db.recent.length=12;
+  saveDB(); renderRecent();
+}
+
+/* ================= AI 调用 ================= */
+var SYSTEM_PROMPT = [
+  "你是中英双语词典编辑，为中高级中文母语者提供地道英文表达。",
+  "用户输入一个中文意思，返回 3 个地道候选，按贴切度排序。优先给短语/习语本身，不要解释性整句，不要中式直译。",
+  "每个候选标注：frequency/register/region/tone/scenario（简短关键词），给 3 句自然英文例句配中文，每句末尾用括号标注出处（如 Cambridge / TED / 纽约时报 / Reddit 等）。",
+  "disambig 为每个表达写一条，讲清核心差别和何时不能互换，必须具体。",
+  "relevance 为 1-5 正整数（5最贴切）。只输出JSON，不要任何Markdown或前后文字。",
+  "JSON结构：",
+  '{"query":"...","expressions":[{"expression":"","relevance":5,"type":"","frequency":"","register":"","region":"","tone":"","scenario":"","meaning":"","examples":[{"en":"","zh":"","source":""}]}],"disambig":["..."]}',
+].join("\n");
+
+function callAI(text){
+  var st=db.settings;
+  var url=st.base.replace(/\/+$/,"")+"/chat/completions";
+  var payload={
+    model:st.model,
+    messages:[
+      {role:"system",content:SYSTEM_PROMPT},
+      {role:"user",content:text}
+    ],
+    temperature:0.4,
+    max_tokens:1500,
+    stream:true
+  };
+  if(st.forceJson!==false){
+    payload.response_format={type:"json_object"};
+  }
+  payload.enable_thinking = !!st.thinking;
+
+  // 流式读取：拼完整 JSON 后再解析，过程中更新加载提示
+  return new Promise(function(resolve,reject){
+    fetch(url,{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        "Authorization":"Bearer "+st.key
+      },
+      body:JSON.stringify(payload)
+    }).then(function(res){
+      if(!res.ok){
+        return res.text().then(function(t){
+          var msg="";
+          try{ var j=JSON.parse(t); msg=j.error&&j.error.message?j.error.message:t; }catch(e){ msg=t; }
+          throw new Error("接口返回 "+res.status+"："+(msg||res.statusText));
+        });
+      }
+      var reader=res.body.getReader();
+      var decoder=new TextDecoder("utf-8");
+      var buf="";
+      var full="";
+      var timer=null;
+
+      function pump(){
+        reader.read().then(function(r){
+          if(r.done){ finish(); return; }
+          buf+=decoder.decode(r.value,{stream:true});
+          // 逐行处理 SSE
+          var lines=buf.split("\n");
+          buf=lines.pop();
+          for(var i=0;i<lines.length;i++){
+            var line=lines[i].trim();
+            if(!line) continue;
+            if(line.indexOf("data:")!==0) continue;
+            var payload=line.slice(5).trim();
+            if(payload==="[DONE]"){ finish(); return; }
+            try{
+              var chunk=JSON.parse(payload);
+              var d=chunk.choices&&chunk.choices[0]&&chunk.choices[0].delta&&chunk.choices[0].delta.content;
+              if(d){
+                full+=d;
+                // 每 200ms 更新一次状态，显示已收到的片段
+                if(!timer){
+                  timer=setTimeout(function(){
+                    timer=null;
+                    updateStreamingStatus(full);
+                  },200);
+                }
+              }
+            }catch(e){}
+          }
+          pump();
+        });
+      }
+
+      function finish(){
+        if(timer){ clearTimeout(timer); timer=null; }
+        try{
+          resolve(parseContent(full));
+        }catch(e){
+          reject(new Error("解析失败："+e.message+"\n原始返回："+full.slice(0,300)));
+        }
+      }
+      pump();
+    }).catch(reject);
+  });
+}
+
+function parseContent(content){
+  var raw=content;
+  var obj=null;
+  // 1. 直接解析
+  try{ obj=JSON.parse(content); }catch(e){}
+  // 2. 剥 markdown 代码围栏
+  if(!obj){
+    var fence=String.fromCharCode(96,96,96);
+    var re=new RegExp(fence+"(?:json)?\\s*([\\s\\S]*?)"+fence,"i");
+    var m=content.match(re);
+    if(m){ try{ obj=JSON.parse(m[1].trim()); }catch(e){} }
+  }
+  // 3. 抓最外层 {}
+  if(!obj){
+    var m2=content.match(/\{[\s\S]*\}/);
+    if(m2){ try{ obj=JSON.parse(m2[0]); }catch(e){} }
+  }
+  if(!obj){
+    throw new Error("AI 没有返回有效 JSON。原始返回："+raw.slice(0,200));
+  }
+  // 兼容不同字段名
+  var list = obj.expressions || obj.candidates || obj.items || obj.alternatives || obj.results || obj.answers;
+  if(Array.isArray(list) && list.length){
+    obj.expressions = list;
+  }else if(Array.isArray(obj)){
+    // 最外层就是数组
+    obj = { query:"", expressions:obj, disambig:[] };
+  }
+  if(!Array.isArray(obj.expressions)||!obj.expressions.length){
+    throw new Error("返回结果中没有表达候选数组。原始返回："+raw.slice(0,300));
+  }
+  if(!Array.isArray(obj.disambig)) obj.disambig=[];
+  // relevance 兜底：修正非 1-5 整数（部分模型会返回负数或 0）。
+  // 模型已按贴切度排序，无效值按顺序回填：首个 5、依次递减，最低 3。
+  obj.expressions.forEach(function(it,i){
+    var r=parseInt(it.relevance,10);
+    if(!(r>=1&&r<=5)){
+      r=Math.max(3, 5-i);
+    }
+    it.relevance=r;
+    // 兼容旧字段 example_en/example_zh → examples 数组
+    if(!Array.isArray(it.examples)){
+      if(it.example_en){
+        it.examples=[{en:it.example_en,zh:it.example_zh||""}];
+      }else{
+        it.examples=[];
+      }
+    }
+  });
+  return obj;
+}
+
+// 通用 JSON 解析（用于对话生成等场景）
+function parseRawJSON(content){
+  var raw=content;
+  var obj=null;
+  // 1. 直接解析
+  try{ obj=JSON.parse(content); }catch(e){}
+  // 2. 剥 markdown 代码围栏
+  if(!obj){
+    var fence=String.fromCharCode(96,96,96);
+    var re=new RegExp(fence+"(?:json)?\\s*([\\s\\S]*?)"+fence,"i");
+    var m=content.match(re);
+    if(m){ try{ obj=JSON.parse(m[1].trim()); }catch(e){} }
+  }
+  // 3. 抓最外层 {}
+  if(!obj){
+    var m2=content.match(/\{[\s\S]*\}/);
+    if(m2){ try{ obj=JSON.parse(m2[0]); }catch(e){} }
+  }
+  if(!obj){
+    throw new Error("AI 没有返回有效 JSON。原始返回："+raw.slice(0,200));
+  }
+  return obj;
+}
+
+/* ================= 搜索流程 & 渲染结果 ================= */
+var lastResult=null;
+
+function runSearch(q){
+  q=(q||"").trim();
+  if(!q) return;
+  if(!db.settings.key){
+    showStatus("error","还没配置 API Key。","先到「设置」里选择服务并填入 Key，保存后即可查询。");
+    switchTab("settings");
+    return;
+  }
+  $("searchInput").value=q;
+  $("resultsArea").innerHTML="";
+  showStatus("loading","正在为「"+q+"」匹配地道表达…");
+  var btn=$("searchBtn"); btn.disabled=true;
+  callAI(q).then(function(obj){
+    lastResult=obj;
+    pushRecent(q);
+    $("statusArea").innerHTML="";
+    renderResults(q,obj);
+  }).catch(function(err){
+    showStatus("error","查询失败："+err.message,"若是浏览器跨域(CORS)限制，可换用允许跨域的兼容接口；也可稍后重试。");
+  }).then(function(){
+    btn.disabled=false;
+  });
+}
+
+function updateStreamingStatus(partial){
+  var area=$("statusArea");
+  // 尝试解析当前片段，给用户看已生成的部分
+  var preview="";
+  try{
+    var o=parseContent(partial);
+    if(o.expressions&&o.expressions.length){
+      preview='<span class="hint" style="color:var(--accent)">✓ 已生成 '+o.expressions.length+' 个表达，等待完整返回…</span>';
+    }
+  }catch(e){}
+  area.innerHTML='<div class="status-card"><span class="spinner"></span>正在生成地道表达… '+preview+'</div>';
+}
+
+function showStatus(kind,msg,hint){
+  var area=$("statusArea");
+  if(kind==="loading"){
+    area.innerHTML='<div class="status-card"><span class="spinner"></span>'+esc(msg)+"</div>";
+  }else if(kind==="error"){
+    area.innerHTML='<div class="status-card error"><strong>'+esc(msg)+"</strong>"+(hint?'<span class="hint">'+esc(hint)+"</span>":"")+"</div>";
+  }else{
+    area.innerHTML="";
+  }
+}
+
+function stars(n){
+  n=Math.max(0,Math.min(5,parseInt(n,10)||0));
+  var s="";
+  for(var i=1;i<=5;i++){ s+= i<=n?"★":"<span class='off'>★</span>"; }
+  return '<span class="stars" title="贴切度 '+n+'/5">'+s+"</span>";
+}
+
+function renderResults(q,obj){
+  var exprs=obj.expressions;
+  var h='<div class="results-head"><h2>'+esc(q)+'</h2><span class="meta">找到 '+exprs.length+' 个表达 · 按贴切度排序</span></div>';
+  if(Array.isArray(obj.disambig)&&obj.disambig.length){
+    h+='<div class="disambig"><div class="d-title">◇ 一句话分清这几个（别混用）</div>';
+    h+='<div class="disambig-list">';
+    h+=obj.disambig.map(function(d){
+      var parts=String(d).split(/[：:]/);
+      if(parts.length>1){ return "<span><b>"+esc(parts[0])+"</b><span>："+esc(parts.slice(1).join("："))+"</span></span>"; }
+      return "<span><span>"+esc(d)+"</span></span>";
+    }).join('<span class="sep"> · </span>');
+    h+="</div></div>";
+  }
+  exprs.forEach(function(it){
+    var saved=isSaved(it.expression);
+    h+='<article class="expr" data-expr="'+esc(it.expression)+'">';
+    h+='<div class="expr-top"><span class="expr-en">'+esc(it.expression)+'</span>'+stars(it.relevance)+'<span class="spacer"></span>';
+    h+= saved
+      ? '<span class="saved-pill">✓ 已在词库</span>'
+      : '<button class="btn btn-sm btn-primary save-btn" data-i="'+esc(it.expression)+'">+ 加入词库</button>';
+    h+="</div>";
+    h+='<div class="tags">'+
+      '<span class="tag t-freq">'+esc(it.frequency||"")+'</span>'+
+      '<span class="tag">'+esc(it.register||"")+'</span>'+
+      '<span class="tag">'+esc(it.region||"")+'</span>'+
+      '<span class="tag">'+esc(it.tone||"")+'</span>'+
+      (it.type?'<span class="tag">'+esc(it.type)+'</span>':"")+
+      "</div>";
+    h+='<p class="expr-mean">'+esc(it.meaning||"")+'</p>';
+    h+='<div class="expr-scene"><b>场景：</b>'+esc(it.scenario||"")+"</div>";
+    h+='<hr class="divider">';
+    var examples=it.examples||[];
+    if(!examples.length&&it.example_en){
+      examples=[{en:it.example_en,zh:it.example_zh||""}];
+    }
+    if(examples.length){
+      h+='<div class="examples"><div class="ex-title">例句</div>';
+      examples.forEach(function(ex,idx){
+        h+='<div class="ex-item"><span class="ex-num">'+(idx+1)+'.</span> <span class="ex-en">'+esc(ex.en||"")+'</span>';
+        if(ex.zh||ex.source){
+          h+='<span class="ex-zh">'+esc(ex.zh||"");
+          if(ex.source) h+=' <span class="ex-source">('+esc(ex.source)+')</span>';
+          h+='</span>';
+        }
+        h+="</div>";
+      });
+      h+="</div>";
+    }
+    h+='<div class="sources"><span class="slabel">真实语料：</span>'+corpusLinks(it.expression)+"</div>";
+    h+="</article>";
+  });
+  $("resultsArea").innerHTML=h;
+}
+
+$("resultsArea").addEventListener("click",function(e){
+  var b=e.target.closest(".save-btn");
+  if(!b) return;
+  var key=b.getAttribute("data-i");
+  var found=null;
+  if(lastResult){
+    for(var i=0;i<lastResult.expressions.length;i++){
+      if(lastResult.expressions[i].expression===key){ found=lastResult.expressions[i]; break; }
+    }
+  }
+  if(found){ saveExpression(found); b.outerHTML='<span class="saved-pill">✓ 已在词库</span>'; }
+});
+
+$("searchForm").addEventListener("submit",function(e){
+  e.preventDefault();
+  runSearch($("searchInput").value);
+});
+
+/* ================= 词库 ================= */
+function isSaved(en){
+  return db.library.some(function(x){return x.expression.toLowerCase()===String(en).toLowerCase();});
+}
+function saveExpression(it){
+  if(isSaved(it.expression)) return;
+  var item={
+    id:uid(),
+    expression:it.expression,
+    zh_query:lastResult&&lastResult.query?lastResult.query:"",
+    meaning:it.meaning||"",
+    register:it.register||"",
+    frequency:it.frequency||"",
+    region:it.region||"",
+    tone:it.tone||"",
+    status:"new",
+    created:Date.now(),
+    scene:"",
+    dialogues:[],
+    review:{due:0,ease:2.5,interval:0,reps:0}
+  };
+  db.library.push(item);
+  saveDB(); updateLibBadge();
+  // 自动生成对话
+  generateDialogue(item);
+}
+
+function updateLibBadge(){
+  $("libCountBadge").textContent = db.library.length?("("+db.library.length+")"):"";
+}
+
+async function generateDialogue(item, retry){
+  if(!item) return;
+  // 检查是否已有有效对话（失败提示不算有效）
+  if(!retry && item.dialogues && item.dialogues.length>0){
+    var first = item.dialogues[0];
+    if(first.zh && first.zh.indexOf("对话生成失败")===-1 && first.zh.indexOf("需要配置 API")===-1){
+      return;
+    }
+  }
+  
+  var st=db.settings;
+  console.log("generateDialogue settings:", {base:st.base, model:st.model, hasKey:!!st.key});
+  if(!st.base || !st.key || !st.model){
+    item.scene="日常";
+    item.dialogues=[
+      {zh:"这是一个需要配置 API 的示例对话。",en:"This is a sample dialogue that requires API configuration."},
+      {zh:"请在设置中填写你的 API 信息。",en:"Please fill in your API information in the settings."}
+    ];
+    saveDB();
+    return;
+  }
+  
+  try{
+    var prompt = "为英文表达 \""+item.expression+"\"（"+item.meaning+"）写一段 4-6 句的自然对话。\n" +
+      "要求：\n" +
+      "1. 对话必须真实、生活化，像母语者日常会说的\n" +
+      "2. 目标表达自然融入对话，不要括号标注或特别说明\n" +
+      "3. 给出中英文对照\n" +
+      "4. 标注场景（如：职场/社交/家庭）\n" +
+      "5. 每句对话标注说话人（用常见英文名，如 Ashley, Bob, Emma 等，2-3 个人物交替）\n" +
+      "输出 JSON：{\"scene\":\"...\",\"characters\":[\"Ashley\",\"Bob\"],\"dialogues\":[{\"speaker\":\"Ashley\",\"zh\":\"...\",\"en\":\"...\"}]}";
+    
+    var res = await fetch(st.base.replace(/\/$/,"") + "/chat/completions", {
+      method:"POST",
+      headers:{"Content-Type":"application/json","Authorization":"Bearer "+st.key},
+      body:JSON.stringify({
+        model:st.model,
+        messages:[{role:"system",content:"你是场景对话编剧，擅长写真实自然的日常对话。只输出 JSON。"},
+                  {role:"user",content:prompt}],
+        temperature:0.5,
+        max_tokens:800,
+        stream:false,
+        enable_thinking:!!st.thinking
+      })
+    });
+    
+    if(!res.ok) throw new Error("API error "+res.status);
+    var data = await res.json();
+    var raw = data.choices[0].message.content.trim();
+    var json = parseRawJSON(raw);
+    
+    if(json.dialogues && json.dialogues.length>=2){
+      item.scene = json.scene || "日常";
+      item.dialogues = json.dialogues;
+      saveDB();
+    } else {
+      throw new Error("Invalid dialogue format");
+    }
+  }catch(e){
+    console.error("Generate dialogue failed:",e);
+    var errMsg = e.message || "未知错误";
+    item.scene="日常";
+    item.dialogues=[
+      {zh:"（对话生成失败："+errMsg+"）",en:"(Dialogue generation failed: "+errMsg+")"}
+    ];
+    saveDB();
+  }
+}
+
+function renderLibrary(){
+  updateLibBadge();
+  var kw=$("libSearch").value.trim().toLowerCase();
+  var filter=$("libFilter").value;
+  var list=db.library.filter(function(x){
+    if(filter!=="all"&&x.status!==filter) return false;
+    if(kw){
+      var blob=(x.expression+" "+(x.zh_query||"")+" "+(x.meaning||"")).toLowerCase();
+      if(blob.indexOf(kw)===-1) return false;
+    }
+    return true;
+  });
+  $("libCount").textContent="共 "+db.library.length+" 个";
+  var box=$("libList");
+  if(!list.length){
+    box.innerHTML='<div class="empty"><div class="big">📭</div>'+
+      (db.library.length?"没有符合筛选的表达。":"词库还是空的，去「查表达」搜一个中文并加入词库吧。")+"</div>";
+    return;
+  }
+  var statusMap={new:"新词",learning:"学习中",mastered:"已掌握"};
+  box.innerHTML='<div class="lib-grid">'+list.map(function(x){
+    var tags='<span class="tag t-freq">'+esc(x.frequency||"")+'</span>'+
+      '<span class="tag">'+esc(x.register||"")+'</span>'+
+      (x.region?'<span class="tag">'+esc(x.region)+"</span>":"");
+    return '<article class="lib-card">'+
+      '<div class="lc-top"><span class="lc-en">'+esc(x.expression)+"</span></div>"+
+      (x.zh_query?'<div class="lc-zh">源自：'+esc(x.zh_query)+"</div>":"")+
+      '<div class="tags">'+tags+"</div>"+
+      '<div class="lc-zh">'+esc(x.meaning||"")+"</div>"+
+      '<div class="lc-foot">'+
+        '<select class="status-select" data-status="'+esc(x.id)+'">'+
+          ["new","learning","mastered"].map(function(sv){
+            return '<option value="'+sv+'"'+(x.status===sv?" selected":"")+">"+statusMap[sv]+"</option>";
+          }).join("")+
+        "</select>"+
+        '<span class="spacer"></span>'+
+        '<button class="btn btn-sm btn-danger-ghost" data-del="'+esc(x.id)+'">删除</button>'+
+      "</div></article>";
+  }).join("")+"</div>";
+}
+
+$("libList").addEventListener("click",function(e){
+  var del=e.target.closest("[data-del]");
+  if(del){
+    var id=del.getAttribute("data-del");
+    confirmAction("删除这个表达？","将从词库移除，此操作不可撤销。",function(){
+      db.library=db.library.filter(function(x){return x.id!==id;});
+      saveDB(); renderLibrary();
+    });
+    return;
+  }
+});
+$("libList").addEventListener("change",function(e){
+  var sel=e.target.closest("[data-status]");
+  if(sel){
+    var id=sel.getAttribute("data-status");
+    for(var i=0;i<db.library.length;i++){ if(db.library[i].id===id){ db.library[i].status=sel.value; break; } }
+    saveDB();
+  }
+});
+$("libSearch").addEventListener("input",renderLibrary);
+$("libFilter").addEventListener("change",renderLibrary);
+
+/* 手动添加 */
+$("addManualBtn").addEventListener("click",function(){
+  var en=prompt("输入英文表达：");
+  if(!en) return;
+  var zh=prompt("对应的中文意思（可留空）：","")||"";
+  if(isSaved(en)){ alert("这个表达已在词库。"); return; }
+  db.library.push({
+    id:uid(),expression:en.trim(),zh_query:zh,meaning:"",register:"",frequency:"",region:"",tone:"",
+    status:"new",created:Date.now(),review:{due:0,ease:2.5,interval:0,reps:0},
+    dialogues:[]
+  });
+  saveDB(); renderLibrary();
+});
+
+/* ================= 复习模式 ================= */
+var reviewQueue=[];
+var reviewIdx=0;
+var reviewStats={hard:0,vague:0,easy:0};
+
+$("reviewBtn").addEventListener("click",function(){
+  // 筛选需要复习的：新词 + 学习中
+  reviewQueue=db.library.filter(function(item){
+    return item.status==="new"||item.status==="learning";
+  });
+  if(!reviewQueue.length){
+    $("reviewEmpty").style.display="block";
+    $("reviewWrap").style.display="none";
+    $("reviewDone").style.display="none";
+    return;
+  }
+  reviewIdx=0;
+  reviewStats={hard:0,vague:0,easy:0};
+  $("reviewWrap").style.display="block";
+  $("reviewEmpty").style.display="none";
+  $("reviewDone").style.display="none";
+  switchTab("review");
+  showReviewCard();
+});
+
+$("exitReviewBtn").addEventListener("click",function(){
+  switchTab("library");
+});
+
+$("backToLibraryBtn").addEventListener("click",function(){
+  switchTab("library");
+});
+
+function showReviewCard(){
+  if(reviewIdx>=reviewQueue.length){
+    $("reviewWrap").style.display="none";
+    $("reviewDone").style.display="block";
+    $("reviewStats").textContent="本次复习 "+reviewQueue.length+" 个表达：不会 "+reviewStats.hard+" · 掌握 "+reviewStats.easy;
+    return;
+  }
+  var item=reviewQueue[reviewIdx];
+  $("reviewProgress").textContent=(reviewIdx+1)+" / "+reviewQueue.length;
+  // 翻回正面
+  $("flipCard").classList.remove("flipped");
+  // 正面：中文场景 + 中文对话
+  $("reviewScene").textContent=item.scene||"场景对话";
+  $("reviewDialogueZh").innerHTML=renderDialogueZh(item);
+  // 背面：中英文对照
+  $("reviewSceneBack").textContent=item.scene||"场景对话";
+  $("reviewDialogueBi").innerHTML=renderDialogueBi(item);
+  $("reviewTarget").innerHTML='<b>本次表达：</b>'+esc(item.expression)+'<br><b>释义：</b>'+esc(item.meaning||item.zh_query||"");
+  
+  // 判断对话是否有效，决定显示哪个按钮组
+  var hasValidDialogue = item.dialogues && item.dialogues.length>0 && 
+    item.dialogues[0].zh.indexOf("对话生成失败")===-1 && 
+    item.dialogues[0].zh.indexOf("需要配置 API")===-1;
+  if(hasValidDialogue){
+    $("flipActionsNormal").style.display="flex";
+    $("flipActionsRetry").style.display="none";
+  } else {
+    $("flipActionsNormal").style.display="none";
+    $("flipActionsRetry").style.display="flex";
+  }
+}
+
+function renderDialogueZh(item){
+  // 正面只显示中文对话，带说话人
+  if(!item.dialogues||!item.dialogues.length){
+    return '<div class="zh-line">'+esc(item.zh_query||item.meaning||"暂无对话")+'</div>';
+  }
+  return item.dialogues.map(function(d){
+    var speaker = d.speaker ? '<span class="dlg-speaker">'+esc(d.speaker)+'</span>' : '';
+    return '<div class="dlg-line">'+speaker+'<span class="dlg-text">"'+esc(d.zh||"")+'"</span></div>';
+  }).join("");
+}
+
+function renderDialogueBi(item){
+  // 背面显示完整中英文对照，带说话人
+  if(!item.dialogues||!item.dialogues.length){
+    return '<div class="zh-line">'+esc(item.zh_query||item.meaning||"")+'</div>';
+  }
+  return item.dialogues.map(function(d){
+    var speaker = d.speaker ? '<span class="dlg-speaker">'+esc(d.speaker)+'</span>' : '';
+    return '<div class="dlg-line-bi">'+speaker+'<div class="dlg-zh-bi">"'+esc(d.zh||"")+'"</div><div class="dlg-en-bi">"'+esc(d.en||"")+'"</div></div>';
+  }).join("");
+}
+
+// 点击翻面
+$("flipCard").addEventListener("click",function(e){
+  // 如果点击的是按钮，不翻面
+  if(e.target.closest(".btn-wont")||e.target.closest(".btn-know")||e.target.closest(".btn-retry")) return;
+  if($("flipCard").classList.contains("flipped")){
+    // 背面点任意处返回正面，下一张
+    $("flipCard").classList.remove("flipped");
+    reviewIdx++;
+    showReviewCard();
+  }
+});
+
+// 正面按钮
+$("btnWont").addEventListener("click",function(e){
+  e.stopPropagation();
+  rateCard("hard");
+});
+$("btnKnow").addEventListener("click",function(e){
+  e.stopPropagation();
+  rateCard("easy");
+});
+$("btnRetry").addEventListener("click",function(e){
+  e.stopPropagation();
+  // 重试生成对话
+  var item=reviewQueue[reviewIdx];
+  $("btnRetry").textContent=" 生成中...";
+  $("btnRetry").disabled=true;
+  generateDialogue(item, true).then(function(){
+    // 更新正面和背面
+    $("reviewDialogueZh").innerHTML=renderDialogueZh(item);
+    $("reviewDialogueBi").innerHTML=renderDialogueBi(item);
+    $("reviewScene").textContent=item.scene||"场景对话";
+    $("reviewSceneBack").textContent=item.scene||"场景对话";
+    // 恢复按钮
+    $("btnRetry").textContent=" 重新生成对话";
+    $("btnRetry").disabled=false;
+    // 切换到正常按钮
+    $("flipActionsNormal").style.display="flex";
+    $("flipActionsRetry").style.display="none";
+  });
+});
+$("btnNext").addEventListener("click",function(e){
+  e.stopPropagation();
+  nextCard();
+});
+
+function nextCard(){
+  $("flipCard").classList.remove("flipped");
+  reviewIdx++;
+  setTimeout(showReviewCard,300);
+}
+
+function rateCard(rating){
+  var item=reviewQueue[reviewIdx];
+  if(rating==="easy") item.status="mastered";
+  else item.status="learning";
+  if(!item.review) item.review={due:0,ease:2.5,interval:0,reps:0};
+  item.review.reps=(item.review.reps||0)+1;
+  if(rating==="easy") item.review.interval=Math.max(1,(item.review.interval||0)*item.review.ease);
+  else item.review.interval=0;
+  item.review.due=Date.now()+item.review.interval*86400000;
+  reviewStats[rating]++;
+  // 翻面
+  $("flipCard").classList.add("flipped");
+  saveDB();
+}
+
+// 点击背面任意处也翻回去（除了按钮）
+$("flipBack").addEventListener("click",function(e){
+  if(e.target.closest(".btn-next")) return;
+  nextCard();
+});
+
+// 空格键
+document.addEventListener("keydown",function(e){
+  if(e.code==="Space"&&$("view-review").classList.contains("active")){
+    e.preventDefault();
+    if($("flipCard").classList.contains("flipped")){
+      nextCard();
+    }
+  }
+});
+
+/* ================= 导入 / 导出 ================= */
+function download(filename,text){
+  try{
+    var blob=new Blob([text],{type:"application/json"});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement("a");
+    a.href=url; a.download=filename; document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    setTimeout(function(){URL.revokeObjectURL(url);},1000);
+  }catch(e){}
+}
+function exportLib(){
+  download("native_library_"+dateStamp()+".json", JSON.stringify(db.library,null,2));
+}
+function exportAll(){
+  download("native_backup_"+dateStamp()+".json", JSON.stringify(db,null,2));
+}
+function dateStamp(){
+  var d=new Date();
+  function p(n){return (n<10?"0":"")+n;}
+  return d.getFullYear()+p(d.getMonth()+1)+p(d.getDate());
+}
+function readImportFile(file,all){
+  var reader=new FileReader();
+  reader.onload=function(){
+    try{
+      var data=JSON.parse(reader.result);
+      if(all){
+        if(!data.settings||!Array.isArray(data.library)) throw new Error("不是完整备份格式");
+        db={
+          settings:Object.assign(JSON.parse(JSON.stringify(DEFAULTS.settings)),data.settings),
+          library:data.library,
+          recent:Array.isArray(data.recent)?data.recent:[]
+        };
+      }else{
+        var arr=Array.isArray(data)?data:(Array.isArray(data.library)?data.library:null);
+        if(!arr) throw new Error("文件里没有词库数组");
+        var added=0;
+        arr.forEach(function(x){
+          if(x&&x.expression&&!isSaved(x.expression)){
+            x.id=x.id||uid();
+            x.status=x.status||"new";
+            x.review=x.review||{due:0,ease:2.5,interval:0,reps:0};
+            db.library.push(x); added++;
+          }
+        });
+        alert("导入完成，新增 "+added+" 个。");
+      }
+      saveDB(); renderLibrary(); fillSettings();
+      if(all){ $("setMsg").textContent="数据已导入。"; setTimeout(function(){$("setMsg").textContent="";},2500); }
+    }catch(err){
+      alert("导入失败："+err.message);
+    }
+  };
+  reader.readAsText(file);
+}
+$("exportBtn").addEventListener("click",exportLib);
+$("importBtn").addEventListener("click",function(){$("importFile").click();});
+$("importFile").addEventListener("change",function(){
+  if(this.files&&this.files[0]) readImportFile(this.files[0],false);
+  this.value="";
+});
+$("setExportBtn").addEventListener("click",exportAll);
+$("setImportBtn").addEventListener("click",function(){$("setImportFile").click();});
+$("setImportFile").addEventListener("change",function(){
+  if(this.files&&this.files[0]) readImportFile(this.files[0],true);
+  this.value="";
+});
+
+/* ================= 设置表单 ================= */
+var PROVIDERS={
+  doubao:{base:"https://ark.cn-beijing.volces.com/api/v3",model:"doubao-seed-1-6-250615"},
+  deepseek:{base:"https://api.deepseek.com",model:"deepseek-chat"},
+  custom:{base:"https://api.openai.com/v1",model:"gpt-4o-mini"}
+};
+function fillSettings(){
+  var p=db.settings.provider;
+  var btns=document.querySelectorAll("#providerRow .radio-opt");
+  for(var i=0;i<btns.length;i++){ btns[i].classList.toggle("sel", btns[i].getAttribute("data-provider")===p); }
+  $("cfgBase").value=db.settings.base;
+  $("cfgModel").value=db.settings.model;
+  $("cfgKey").value=db.settings.key;
+  $("cfgForceJson").checked = db.settings.forceJson!==false;
+  $("cfgThinking").checked = !!db.settings.thinking;
+  $("src-reverso").checked=!!db.settings.sources.reverso;
+  $("src-youglish").checked=!!db.settings.sources.youglish;
+  $("src-cambridge").checked=!!db.settings.sources.cambridge;
+  $("src-jukuu").checked=!!db.settings.sources.jukuu;
+}
+function saveSettingsFromForm(){
+  db.settings.base=$("cfgBase").value.trim();
+  db.settings.model=$("cfgModel").value.trim();
+  db.settings.key=$("cfgKey").value.trim();
+  db.settings.forceJson = $("cfgForceJson").checked;
+  db.settings.thinking = $("cfgThinking").checked;
+  db.settings.sources={
+    reverso:$("src-reverso").checked,
+    youglish:$("src-youglish").checked,
+    cambridge:$("src-cambridge").checked,
+    jukuu:$("src-jukuu").checked
+  };
+  saveDB();
+}
+document.querySelectorAll("#providerRow .radio-opt").forEach(function(btn){
+  btn.addEventListener("click",function(){
+    var p=btn.getAttribute("data-provider");
+    db.settings.provider=p;
+    var preset=PROVIDERS[p];
+    $("cfgBase").value=preset.base;
+    $("cfgModel").value=preset.model;
+    document.querySelectorAll("#providerRow .radio-opt").forEach(function(b){
+      b.classList.toggle("sel", b===btn);
+    });
+    saveSettingsFromForm();
+  });
+});
+["cfgBase","cfgModel","cfgKey"].forEach(function(id){
+  $(id).addEventListener("change",saveSettingsFromForm);
+});
+$("cfgForceJson").addEventListener("change",saveSettingsFromForm);
+$("cfgThinking").addEventListener("change",saveSettingsFromForm);
+["src-reverso","src-youglish","src-cambridge","src-jukuu"].forEach(function(id){
+  $(id).addEventListener("change",saveSettingsFromForm);
+});
+
+/* 测试连接 */
+$("testBtn").addEventListener("click",function(){
+  saveSettingsFromForm();
+  var r=$("testResult");
+  if(!db.settings.key){ r.className="test-result fail"; r.textContent="请先填写 API Key。"; return; }
+  r.className="test-result"; r.innerHTML='<span class="spinner"></span>正在测试…';
+  callAI("说到做到").then(function(){
+    r.className="test-result ok"; r.textContent="✓ 连接成功，模型可正常返回地道表达。";
+  }).catch(function(err){
+    r.className="test-result fail"; r.textContent="✗ "+err.message;
+  });
+});
+
+/* ================= 清空 & 确认弹窗 ================= */
+$("clearBtn").addEventListener("click",function(){
+  confirmAction("清空全部本地数据？","词库、查询历史和设置都会被删除，且不可撤销。建议先导出备份。",function(){
+    try{ localStorage.removeItem(LS_KEY); }catch(e){}
+    db=JSON.parse(JSON.stringify(DEFAULTS));
+    renderLibrary(); fillSettings(); renderRecent();
+    $("setMsg").textContent="已清空。"; setTimeout(function(){$("setMsg").textContent="";},2500);
+  });
+});
+
+var confirmCallback=null;
+function confirmAction(title,body,cb){
+  $("confirmTitle").textContent=title;
+  $("confirmBody").textContent=body;
+  confirmCallback=cb;
+  $("confirmDialog").showModal();
+}
+$("confirmForm").addEventListener("click",function(e){
+  var btn=e.target.closest("button");
+  if(!btn) return;
+  var val=btn.getAttribute("value");
+  if(val==="ok"&&typeof confirmCallback==="function"){ confirmCallback(); }
+  confirmCallback=null;
+});
+
+/* ================= init ================= */
+try{
+  renderSuggest();
+  renderRecent();
+  updateLibBadge();
+  $("searchInput").focus({preventScroll:true});
+}catch(e){}
+
+})();
+</script>
+</body>
+</html>

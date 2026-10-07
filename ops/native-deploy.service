@@ -1,0 +1,17 @@
+[Unit]
+Description=Deploy NATIVE static site from GitHub main
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=native-deploy
+Group=native-deploy
+RuntimeDirectory=native-deploy
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/opt/native-source /var/www/native /run/native-deploy
+ExecStart=/usr/local/sbin/deploy-native
+TimeoutStartSec=90
